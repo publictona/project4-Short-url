@@ -86,30 +86,26 @@ const createUrl = async function (req, res) {
 
 //**************************************************************getUrl-API*********************************************************************//
 
-const getUrl = async function (req, res) {
-    try {
-         let urlCode = req.params.urlCode
-
-         if (Object.values(urlCode ).length == 0)
-        return res.status(404).send({status: false, msg: " urlCode not found " })
 
 
-        const url = await urlModel.findOne({ urlCode: urlCode })
-       if (url) {
-            return res.status(302).redirect(url.longUrl)
-        } else {
-            
-            await SET_ASYNC(`${url}`, JSON.stringify(url))
-            return res.status(400).send({ status: false, message: "invalid url" })
-            
+const getUrl = async (req, res) => {
+    try{
+        let cahcedUrlData = await GET_ASYNC(`${req.params.urlCode}`)
+        if(cahcedUrlData)
+            // res.status(200).send({status: true, message: "Data from REDIS ->", longUrl: JSON.parse(cahcedUrlData)})
+            res.redirect(JSON.parse(cahcedUrlData))
+        else{
+            let findUrl = await urlModel.findOne({urlCode: req.params.urlCode})
+            if(!findUrl)
+                return res.status(404).send({status: false, message: 'URL not found.'})
+            await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl.longUrl))
+            // res.status(200).send({status: true, message: "Data from DB ->", data: findUrl.longUrl})
+            res.redirect(findUrl.longUrl)
         }
-
-}catch (err) {
-        console.log(err)
-        res.status(500).send({ status: false, msg: "err.message" })
+    }catch(err){
+        res.status(500).send({status: false, message: err.message})
     }
 }
-
 
 //======================================================Exporting============================================================================//
 
