@@ -90,6 +90,10 @@ const getUrl = async function (req, res) {
     try {
          let urlCode = req.params.urlCode
 
+         if (Object.values(urlCode ).length == 0)
+        return res.status(404).send({status: false, msg: " urlCode not found " })
+
+
         const url = await urlModel.findOne({ urlCode: urlCode })
        if (url) {
             return res.status(302).redirect(url.longUrl)
@@ -98,8 +102,7 @@ const getUrl = async function (req, res) {
             await SET_ASYNC(`${url}`, JSON.stringify(url))
             return res.status(400).send({ status: false, message: "invalid url" })
             
-            
-    }
+        }
 
 }catch (err) {
         console.log(err)
@@ -112,3 +115,4 @@ const getUrl = async function (req, res) {
 
 module.exports.createUrl = createUrl
 module.exports.getUrl = getUrl
+
